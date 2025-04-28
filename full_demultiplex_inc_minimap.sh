@@ -107,7 +107,10 @@ for fastq in "$OUTPUT_DIR/intermediate_files/sorted_untrimmed_fastq_files"/*.fas
     filename=$(basename "$fastq")
     echo "Chopping $filename"
     echo -e "\nStarting $filename" >> "$OUTPUT_DIR/intermediate_files/porechop.log"
+
     porechop -i "$fastq" -o "$OUTPUT_DIR/sorted_trimmed_fastq_files/trimmed_$filename" --discard_middle >>"$OUTPUT_DIR/intermediate_files/porechop.log"
+
+
     echo "Finished $filename" >>"$OUTPUT_DIR/intermediate_files/porechop.log"
 done
 echo -e "\n porechop finished (find detailed info in $OUTPUT_DIR/intermediate_files/porechop.log"
