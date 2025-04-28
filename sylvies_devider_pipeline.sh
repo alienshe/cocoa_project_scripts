@@ -10,20 +10,23 @@ GENE_NAME=${5:-$(basename "${OUTPUT_DIR}")} #optional, use if you want intermedi
 #use for one gene at a time
 
 #example: bash sylvies_devider_pipeline /home/user/upper_level_dir my_amplicon_folder reference_files/chr9.fasta /home/user/output Tc3618
-
+LOG_FILE="${OUTPUT_DIR}/log.txt"
 basename "${OUTPUT_DIR}"
 #other settings
 THREADS="8" #used for clair3 and devider
 MODEL_NAME="r941_prom_hac_g360+g422"
 
+
+
 #make output_dir
 echo "Creating output directory"
 mkdir ${OUTPUT_DIR}
-touch ${OUTPUT_DIR}/log.txt
+echo "Starting pipeline for gene: ${GENE_NAME}" | tee ${LOG_FILE}  # This ensures you log the start of the pipeline
+exec > >(tee -a ${LOG_FILE}) 2>&1  # Redirect both stdout and stderr to the log file
+
 echo $@>>${OUTPUT_DIR}/log.txt #write all arguments to the log
 echo "Model used: "${MODEL_NAME} >>${OUTPUT_DIR}/log.txt
 
-exec > >(tee ${OUTPUT_DIR}/log.txt) #write all outputs henceforth to the log file
 
 #start making alignments
 echo "Starting to constuct alignments with minimap"
@@ -51,17 +54,18 @@ echo "Finished making alignments"
 
 #start making vcf with clair3
 
-echo "Starting vcf production with clair3"
+echo -e "\nStarting vcf production with clair3"
+echo "alignment: ${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam"
+echo "reference: ${INPUT_DIR}/${REFERENCE_FASTA}"
 mkdir ${OUTPUT_DIR}/clair3_output
-source activate base
-conda activate clair3
-docker run -it \
+docker run \
 -v ${INPUT_DIR}:${INPUT_DIR} \
 -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
 hkubal/clair3:latest /opt/bin/run_clair3.sh \
 --bam_fn=${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam \
 --ref_fn=${INPUT_DIR}/${REFERENCE_FASTA} \
---threads=${THREADS} --platform="ont" \
+--threads=${THREADS} \
+--platform="ont" \
 --model_path="/opt/models/${MODEL_NAME}" \
 --output=${OUTPUT_DIR}/clair3_output \
 --include_all_ctgs \
