@@ -69,10 +69,11 @@ hkubal/clair3:latest /opt/bin/run_clair3.sh \
 --model_path="/opt/models/${MODEL_NAME}" \
 --output=${OUTPUT_DIR}/clair3_output \
 --include_all_ctgs \
---no_phasing_for_fa \
---chunk_size=10000
-
-
+--chunk_size=5000 \
+--enable_variant_calling_at_sequence_head_and_tail \
+--enable_phasing \
+--var_pct_full=1.0 \
+--ref_pct_full=1.0
 echo "Finished clair3"
 
 #devider
@@ -82,12 +83,18 @@ echo "Starting devider"
 mkdir ${OUTPUT_DIR}/devider_output
 
 /home/tobias-lab/miniconda3/bin/devider \
--v ${OUTPUT_DIR}/clair3_output/full_alignment.vcf.gz \
+-v ${OUTPUT_DIR}/clair3_output/merge_output.vcf.gz \
 -b ${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam \
 -r ${INPUT_DIR}/${REFERENCE_FASTA} \
 -o ${OUTPUT_DIR}/devider_output \
 -t ${THREADS} \
---allele-output
+--allele-output \
+--preset nanopore-r10
+
+haplotag_bam \
+${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam \
+-i ${OUTPUT_DIR}/devider_output/ids.txt
+
 echo "Finished devider"
 
 
