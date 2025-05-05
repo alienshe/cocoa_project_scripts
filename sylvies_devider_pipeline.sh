@@ -14,8 +14,8 @@ LOG_FILE="${OUTPUT_DIR}/log.txt"
 basename "${OUTPUT_DIR}"
 #other settings
 THREADS="8" #used for clair3 and devider
-MODEL_NAME="r941_prom_hac_g360+g422"
-
+MODEL_NAME="r1041_e82_400bps_hac_v500"
+MODEL_DIR="/home/tobias-lab/models"
 
 
 #make output_dir
@@ -59,6 +59,7 @@ echo "alignment: ${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam"
 echo "reference: ${INPUT_DIR}/${REFERENCE_FASTA}"
 mkdir ${OUTPUT_DIR}/clair3_output
 docker run \
+-v ${MODEL_DIR}:/opt/models \
 -v ${INPUT_DIR}:${INPUT_DIR} \
 -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
 hkubal/clair3:latest /opt/bin/run_clair3.sh \

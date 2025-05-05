@@ -9,7 +9,7 @@ REF_DIR="$5"
 mkdir -p "$OUTPUT_DIR"
 cd "$OUTPUT_DIR" || { echo "Failed to cd into $OUTPUT_DIR"; exit 1; }
 
-while IFS=$'\t' read -r query reference gene_name; do
+while IFS=$'\t' read -r query reference gene_name || [ -n "$query" ]; do
     query=$(echo "$query" | tr -d '\r')
     reference=$(echo "$reference" | tr -d '\r')
     gene_name=$(echo "$gene_name" | tr -d '\r')
