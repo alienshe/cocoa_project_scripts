@@ -27,7 +27,7 @@ exec > >(tee "$LOGFILE") 2>&1
 
 echo -e "\nRunning minimap2..."
 
-minimap2 "$BARCODES_FA" "$READS_FASTQ" -k7 -A1 -m42 -w1 > "$OUTPUT_DIR/intermediate_files/barcode-read_alignment.paf"
+minimap2 "$BARCODES_FA" "$READS_FASTQ" -k5 -A1 -m32 -w1 > "$OUTPUT_DIR/intermediate_files/barcode-read_alignment.paf"
 
 echo "minimap2 finished"
 

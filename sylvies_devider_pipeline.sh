@@ -5,7 +5,8 @@ INPUT_DIR=$1 #directory containing reads and ref fasta, absolute path needed
 READS=$2 #relative to input directory, must be trimmed already eg with porechop
 REFERENCE_FASTA=$3 #relative to input directory, subset of the relevant chromosome, no special characters in header of fasta, must be indexed with samtools (.fasta.fai file in same directory)
 OUTPUT_DIR=$4 #absolute path needed
-GENE_NAME=${5:-$(basename "${OUTPUT_DIR}")} #optional, use if you want intermediate files like alignments to be named something different than your output directory
+MINIMUM_ABUNDANCE=${5:-"0"} #optional, number from 0-100,(default is 0) which gets inputted to devider 
+GENE_NAME=${6:-$(basename "${OUTPUT_DIR}")} #optional, use if you want intermediate files like alignments to be named something different than your output directory
 
 #use for one gene at a time
 
@@ -90,7 +91,8 @@ mkdir ${OUTPUT_DIR}/devider_output
 -o ${OUTPUT_DIR}/devider_output \
 -t ${THREADS} \
 --allele-output \
---preset nanopore-r10
+--preset nanopore-r10 \
+--min-abund ${MINIMUM_ABUNDANCE}
 
 haplotag_bam \
 ${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam \
