@@ -5,7 +5,7 @@ if [ "$#" -ne 3 ]; then
     echo -e "\n<barcodes.fa> should contain the full dual barcodes with the names of the barcodes as the headers"
     echo "should be the ONT barcode + adapter + inner barcode + primer"
     echo -e "\nthis script assumes the length of the full dual barcode is ~50 bp, if the length is very different you may want to adjust the minimap2 arguments in the script \(particularly the -m argument is set to the length of the barcode minus 10\)"
-
+    echo -e "IMPORTANT: for the porechop portion of this pipeline to work, the custom inner barcodes and primers must be added as adapters in porechop's adapters.py file"
     exit 1
 fi
 BARCODES_FA="$1"

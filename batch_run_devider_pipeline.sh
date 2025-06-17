@@ -33,8 +33,12 @@ while IFS=$'\t' read -r query reference gene_name || [ -n "$query" ]; do
 
     # Example command using query and reference
     ~/sylvie_workspace/scripts/sylvies_devider_pipeline.sh "$INPUT_DIR" "$QUERY_DIR/$query" "$REF_DIR/$reference" "$OUTPUT_DIR/$gene_name" "$MIN_AB" "$gene_name"
-
 done < "$INPUT_TSV"
 
-echo -e "\n******SUMMARY******"
+echo -e "copying alignments into one folder..."
+~/sylvie_workspace/scripts/intermediate/alignment_collector.sh "$OUTPUT_DIR" "$OUTPUT_DIR"/collected_alignments
+
+
+echo -e "\n****** FINAL SUMMARY ******"
 ~/sylvie_workspace/scripts/devider_output_summarizer.sh "$OUTPUT_DIR" "$OUTPUT_DIR/haplotype_summary.txt"
+echo -e "\nAlignments collected in $OUTPUT_DIR/collected_alignments (where devider ran, alignments are tagged with haplotype 'HP')"

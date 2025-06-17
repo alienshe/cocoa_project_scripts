@@ -12,13 +12,19 @@ OUTPUT="$2"
 > "$OUTPUT"
 
 for dev_out in "$PARENT_DIR"/*; do
-    maj_vote_file="$dev_out/devider_output/majority_vote_haplotypes.fasta"
-    base_folder_name=$(basename "$dev_out")
-    echo -e "\n$base_folder_name" >> "$OUTPUT"
-    if [ -f "$maj_vote_file" ]; then
-        grep "^>" "$maj_vote_file" >> "$OUTPUT"
+    if [ -d "$dev_out/alignments" ]; then
+        #find haplotype file (maj_vote_file)
+        maj_vote_file="$dev_out/devider_output/majority_vote_haplotypes.fasta"
+        #print name of the folder (should be name of the gene)
+        base_folder_name=$(basename "$dev_out")
+        echo -e "\n$base_folder_name" >> "$OUTPUT"
+        if [ -f "$maj_vote_file" ]; then
+            grep "^>" "$maj_vote_file" >> "$OUTPUT"
+        else
+            echo "No devider output found, probably means that no variant SNPs were detected by Clair3" >> "$OUTPUT"
+        fi
     else
-        echo "No file found: $maj_vote_file" >> "$OUTPUT"
+        continue
     fi
 
 done
