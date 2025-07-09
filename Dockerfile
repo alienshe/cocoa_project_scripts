@@ -1,17 +1,23 @@
-FROM mambaorg/micromamba:1.5
+FROM mambaorg/micromamba:1.5.8
 
 USER root
 
-# Install system deps and bioinformatics tools in one layer
+# Install system deps and bioinformatics tools including clair3
 RUN apt-get update && apt-get install -y git wget && rm -rf /var/lib/apt/lists/* && \
     micromamba install -y -n base -c bioconda -c conda-forge \
-        porechop minimap2 samtools tabix lofreq devider \
+        porechop minimap2 samtools tabix lofreq devider clair3 \
         python pip numpy pandas biopython matplotlib seaborn && \
     micromamba clean --all --yes
 
 ENV PATH="/opt/conda/bin:$PATH"
 
-# Copy files and setup in one layer
+# Download clair3 model
+RUN mkdir -p /opt/models && \
+    cd /opt/models && \
+    wget -q https://cdn.oxfordnanoportal.com/software/analysis/models/clair3/r1041_e82_400bps_hac_v500.tar.gz && \
+    tar -xzf r1041_e82_400bps_hac_v500.tar.gz && \
+    rm r1041_e82_400bps_hac_v500.tar.gz
+
 COPY . /app/
 WORKDIR /app
 RUN chmod +x *.sh
@@ -39,9 +45,11 @@ Direct Usage:
   ./script.sh <args>                 - Run any script directly
   bash                               - Interactive shell
 
-Tools available: porechop, minimap2, samtools, devider
+Tools available: porechop, minimap2, samtools, devider, clair3
 HELP
     command -v devider >/dev/null && echo "✅ devider ready" || echo "⚠️  devider not found"
+    command -v run_clair3.sh >/dev/null && echo "✅ clair3 ready" || echo "⚠️  clair3 not found"
+    [ -d "/opt/models/r1041_e82_400bps_hac_v500" ] && echo "✅ clair3 model ready" || echo "⚠️  clair3 model not found"
     exit 0
 fi
 
