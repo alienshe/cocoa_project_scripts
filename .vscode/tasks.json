@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Demultiplex Script",
+      "type": "shell",
+      "command": "./full_demultiplex_inc_minimap.sh",
+      "args": [
+        "demo_files/inputs/reference_files/dual_barcodes_with_primers.fa",
+        "demo_files/inputs/pangkep_raw_reads/barcode01_raw_reads.fastq.gz",
+        "outputs/demultiplex_out"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "options": {
+        "shell": {
+          "executable": "/bin/bash",
+          "args": ["-c"]
+        },
+        "env": {
+          "PATH": "/opt/homebrew/opt/grep/libexec/gnubin:/opt/homebrew/bin:/usr/bin:/bin"
+        }
+      }
+    }
+  ]
+}
