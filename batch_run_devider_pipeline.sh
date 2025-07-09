@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 if [ "$#" -ne 6 ]; then
     echo "Error: incorrect number of arguments"
-    echo "Usage: ./batch_fun_devider_pipeline.sh <list.tsv> <input_dir> <output_dir> <query_dir> <reference_dir> <minimum_abundance>"
+    echo "Usage: ./batch_run_devider_pipeline.sh <list.tsv> <input_dir> <output_dir> <query_dir> <reference_dir> <minimum_abundance>"
     echo "note that input_dir and output_dir must be absolute paths (starting from home), and query_dir and reference_dir should be relative paths from input_dir"
     echo "see inside script for more information on arguments"
     exit 1
