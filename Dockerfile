@@ -23,67 +23,64 @@ WORKDIR /app
 RUN chmod +x *.sh
 
 # Create entrypoint script
-RUN cat > /usr/local/bin/entrypoint.sh << 'EOF'
-#!/bin/bash
-eval "$(micromamba shell hook --shell bash)"
-micromamba activate base
-
-if [ $# -eq 0 ]; then
-    printf '%s\n' \
-        "Cocoa Project Genomics Pipeline" \
-        "" \
-        "Command Menu:" \
-        "  list_demo_files                    - List available demo files" \
-        "  demo_demultiplex <output_dir>      - Run demultiplexing demo" \
-        "  demo_devider <gene> <output_dir>   - Run single gene analysis demo" \
-        "  demo_batch_devider <output_dir>    - Run batch processing demo" \
-        "  demultiplex <args>                 - Run demultiplexing on your data" \
-        "  devider <args>                     - Run single gene analysis" \
-        "  batch_devider <args>               - Run batch processing" \
-        "" \
-        "Direct Usage:" \
-        "  ./script.sh <args>                 - Run any script directly" \
-        "  bash                               - Interactive shell" \
-        "" \
-        "Tools available: porechop, minimap2, samtools, devider, clair3"
-    
-    command -v devider >/dev/null && echo "✅ devider ready" || echo "⚠️  devider not found"
-    command -v run_clair3.sh >/dev/null && echo "✅ clair3 ready" || echo "⚠️  clair3 not found"
-    [ -d "/opt/models/r1041_e82_400bps_hac_v500" ] && echo "✅ clair3 model ready" || echo "⚠️  clair3 model not found"
-    exit 0
-fi
-
-case "$1" in
-    list_demo_files) find /app/demo_files -type f | head -20 ;;
-    demo_demultiplex) 
-        [ -z "$2" ] && { echo "Usage: demo_demultiplex <output_dir>"; exit 1; }
-        mkdir -p "$2"
-        ./full_demultiplex_inc_minimap.sh \
-            demo_files/inputs/reference_files/dual_barcodes_with_primers.fa \
-            demo_files/inputs/pangkep_raw_reads/barcode01_raw_reads.fastq.gz "$2" ;;
-    demo_devider)
-        [ -z "$2" ] || [ -z "$3" ] && { 
-            echo "Usage: demo_devider <gene_name> <output_dir>"
-            echo "Available genes: Tc1318, Tc1320, Tc2391, Tc3078, Tc3425, Tc3618"
-            exit 1; }
-        mkdir -p "$3"
-        ./sylvies_devider_pipeline.sh /app/demo_files \
-            "demo_files/inputs/pangkep_run_bc01_demultiplexed/trimmed_$2.fastq" \
-            "demo_files/inputs/reference_files/${2}_ref_chr*.fasta" "$3" 5 "$2" ;;
-    demo_batch_devider)
-        [ -z "$2" ] && { echo "Usage: demo_batch_devider <output_dir>"; exit 1; }
-        mkdir -p "$2"
-        ./batch_run_devider_pipeline.sh \
-            demo_files/inputs/reference_files/NLRs.tsv /app/demo_files "$2" \
-            demo_files/inputs/pangkep_run_bc01_demultiplexed \
-            demo_files/inputs/reference_files 5 ;;
-    demultiplex) shift; ./full_demultiplex_inc_minimap.sh "$@" ;;
-    devider) shift; ./sylvies_devider_pipeline.sh "$@" ;;
-    batch_devider) shift; ./batch_run_devider_pipeline.sh "$@" ;;
-    bash|sh|/bin/bash|/bin/sh) exec /bin/bash ;;
-    *) exec /bin/bash "$@" ;;
-esac
-EOF
+RUN echo '#!/bin/bash' > /usr/local/bin/entrypoint.sh && \
+    echo 'eval "$(micromamba shell hook --shell bash)"' >> /usr/local/bin/entrypoint.sh && \
+    echo 'micromamba activate base' >> /usr/local/bin/entrypoint.sh && \
+    echo '' >> /usr/local/bin/entrypoint.sh && \
+    echo 'if [ $# -eq 0 ]; then' >> /usr/local/bin/entrypoint.sh && \
+    echo '    printf "%s\n" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "Cocoa Project Genomics Pipeline" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "Command Menu:" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  list_demo_files                    - List available demo files" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  demo_demultiplex <output_dir>      - Run demultiplexing demo" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  demo_devider <gene> <output_dir>   - Run single gene analysis demo" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  demo_batch_devider <output_dir>    - Run batch processing demo" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  demultiplex <args>                 - Run demultiplexing on your data" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  devider <args>                     - Run single gene analysis" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  batch_devider <args>               - Run batch processing" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "Direct Usage:" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  ./script.sh <args>                 - Run any script directly" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "  bash                               - Interactive shell" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        "Tools available: porechop, minimap2, samtools, devider, clair3"' >> /usr/local/bin/entrypoint.sh && \
+    echo '    command -v devider >/dev/null && echo "✅ devider ready" || echo "⚠️  devider not found"' >> /usr/local/bin/entrypoint.sh && \
+    echo '    command -v run_clair3.sh >/dev/null && echo "✅ clair3 ready" || echo "⚠️  clair3 not found"' >> /usr/local/bin/entrypoint.sh && \
+    echo '    [ -d "/opt/models/r1041_e82_400bps_hac_v500" ] && echo "✅ clair3 model ready" || echo "⚠️  clair3 model not found"' >> /usr/local/bin/entrypoint.sh && \
+    echo '    exit 0' >> /usr/local/bin/entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/entrypoint.sh && \
+    echo '' >> /usr/local/bin/entrypoint.sh && \
+    echo 'case "$1" in' >> /usr/local/bin/entrypoint.sh && \
+    echo '    list_demo_files) find /app/demo_files -type f | head -20 ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo '    demo_demultiplex)' >> /usr/local/bin/entrypoint.sh && \
+    echo '        [ -z "$2" ] && { echo "Usage: demo_demultiplex <output_dir>"; exit 1; }' >> /usr/local/bin/entrypoint.sh && \
+    echo '        mkdir -p "$2"' >> /usr/local/bin/entrypoint.sh && \
+    echo '        ./full_demultiplex_inc_minimap.sh \' >> /usr/local/bin/entrypoint.sh && \
+    echo '            demo_files/inputs/reference_files/dual_barcodes_with_primers.fa \' >> /usr/local/bin/entrypoint.sh && \
+    echo '            demo_files/inputs/pangkep_raw_reads/barcode01_raw_reads.fastq.gz "$2" ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo '    demo_devider)' >> /usr/local/bin/entrypoint.sh && \
+    echo '        [ -z "$2" ] || [ -z "$3" ] && {' >> /usr/local/bin/entrypoint.sh && \
+    echo '            echo "Usage: demo_devider <gene_name> <output_dir>"' >> /usr/local/bin/entrypoint.sh && \
+    echo '            echo "Available genes: Tc1318, Tc1320, Tc2391, Tc3078, Tc3425, Tc3618"' >> /usr/local/bin/entrypoint.sh && \
+    echo '            exit 1; }' >> /usr/local/bin/entrypoint.sh && \
+    echo '        mkdir -p "$3"' >> /usr/local/bin/entrypoint.sh && \
+    echo '        ./sylvies_devider_pipeline.sh /app/demo_files \' >> /usr/local/bin/entrypoint.sh && \
+    echo '            "demo_files/inputs/pangkep_run_bc01_demultiplexed/trimmed_$2.fastq" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '            "demo_files/inputs/reference_files/${2}_ref_chr*.fasta" "$3" 5 "$2" ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo '    demo_batch_devider)' >> /usr/local/bin/entrypoint.sh && \
+    echo '        [ -z "$2" ] && { echo "Usage: demo_batch_devider <output_dir>"; exit 1; }' >> /usr/local/bin/entrypoint.sh && \
+    echo '        mkdir -p "$2"' >> /usr/local/bin/entrypoint.sh && \
+    echo '        ./batch_run_devider_pipeline.sh \' >> /usr/local/bin/entrypoint.sh && \
+    echo '            demo_files/inputs/reference_files/NLRs.tsv /app/demo_files "$2" \' >> /usr/local/bin/entrypoint.sh && \
+    echo '            demo_files/inputs/pangkep_run_bc01_demultiplexed \' >> /usr/local/bin/entrypoint.sh && \
+    echo '            demo_files/inputs/reference_files 5 ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo '    demultiplex) shift; ./full_demultiplex_inc_minimap.sh "$@" ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo '    devider) shift; ./sylvies_devider_pipeline.sh "$@" ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo '    batch_devider) shift; ./batch_run_devider_pipeline.sh "$@" ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo '    bash|sh|/bin/bash|/bin/sh) exec /bin/bash ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo '    *) exec /bin/bash "$@" ;;' >> /usr/local/bin/entrypoint.sh && \
+    echo 'esac' >> /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
