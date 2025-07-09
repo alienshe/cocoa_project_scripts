@@ -1,6 +1,5 @@
 # Cocoa Project Genomics Pipeline
 
-A comprehensive Docker-based bioinformatics pipeline for demultiplexing nanopore sequencing data and performing haplotype analysis on plant genomic data. This pipeline was developed for analyzing NLR (Nucleotide-binding Leucine-rich Repeat) genes in cocoa (*Theobroma cacao*) but can be adapted for other genomic studies.
 
 ## Overview
 
