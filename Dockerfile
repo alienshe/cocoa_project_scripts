@@ -29,24 +29,24 @@ eval "$(micromamba shell hook --shell bash)"
 micromamba activate base
 
 if [ $# -eq 0 ]; then
-    cat << 'HELP'
-Cocoa Project Genomics Pipeline
-
-Command Menu:
-  list_demo_files                    - List available demo files
-  demo_demultiplex <output_dir>      - Run demultiplexing demo
-  demo_devider <gene> <output_dir>   - Run single gene analysis demo
-  demo_batch_devider <output_dir>    - Run batch processing demo
-  demultiplex <args>                 - Run demultiplexing on your data
-  devider <args>                     - Run single gene analysis
-  batch_devider <args>               - Run batch processing
-
-Direct Usage:
-  ./script.sh <args>                 - Run any script directly
-  bash                               - Interactive shell
-
-Tools available: porechop, minimap2, samtools, devider, clair3
-HELP
+    printf '%s\n' \
+        "Cocoa Project Genomics Pipeline" \
+        "" \
+        "Command Menu:" \
+        "  list_demo_files                    - List available demo files" \
+        "  demo_demultiplex <output_dir>      - Run demultiplexing demo" \
+        "  demo_devider <gene> <output_dir>   - Run single gene analysis demo" \
+        "  demo_batch_devider <output_dir>    - Run batch processing demo" \
+        "  demultiplex <args>                 - Run demultiplexing on your data" \
+        "  devider <args>                     - Run single gene analysis" \
+        "  batch_devider <args>               - Run batch processing" \
+        "" \
+        "Direct Usage:" \
+        "  ./script.sh <args>                 - Run any script directly" \
+        "  bash                               - Interactive shell" \
+        "" \
+        "Tools available: porechop, minimap2, samtools, devider, clair3"
+    
     command -v devider >/dev/null && echo "✅ devider ready" || echo "⚠️  devider not found"
     command -v run_clair3.sh >/dev/null && echo "✅ clair3 ready" || echo "⚠️  clair3 not found"
     [ -d "/opt/models/r1041_e82_400bps_hac_v500" ] && echo "✅ clair3 model ready" || echo "⚠️  clair3 model not found"
