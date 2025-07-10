@@ -84,7 +84,7 @@ echo "Starting devider"
 
 mkdir ${OUTPUT_DIR}/devider_output
 
-/home/tobias-lab/miniconda3/bin/devider \
+devider \
 -v ${OUTPUT_DIR}/clair3_output/merge_output.vcf.gz \
 -b ${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam \
 -r ${INPUT_DIR}/${REFERENCE_FASTA} \
