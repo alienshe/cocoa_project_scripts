@@ -65,7 +65,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/entrypoint.sh && \
     echo '            echo "Available genes: Tc1318, Tc1320, Tc2391, Tc3078, Tc3425, Tc3618"' >> /usr/local/bin/entrypoint.sh && \
     echo '            exit 1; }' >> /usr/local/bin/entrypoint.sh && \
     echo '        mkdir -p "$3"' >> /usr/local/bin/entrypoint.sh && \
-    echo '        ./sylvies_devider_pipeline.sh /app \' >> /usr/local/bin/entrypoint.sh && \
+    echo '        ./sylvies_devider_pipeline.sh /app/demo_files \' >> /usr/local/bin/entrypoint.sh && \
     echo '            "demo_files/inputs/pangkep_run_bc01_demultiplexed/trimmed_$2.fastq" \' >> /usr/local/bin/entrypoint.sh && \
     echo '            "demo_files/inputs/reference_files/${2}_ref_chr*.fasta" "$3" 5 "$2" ;;' >> /usr/local/bin/entrypoint.sh && \
     echo '    demo_batch_devider)' >> /usr/local/bin/entrypoint.sh && \
