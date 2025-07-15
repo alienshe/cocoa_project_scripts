@@ -22,6 +22,10 @@ MIN_AB="$6"
 mkdir -p "$OUTPUT_DIR"
 cd "$OUTPUT_DIR" || { echo "Failed to cd into $OUTPUT_DIR"; exit 1; }
 
+
+
+SCRIPT_NAME=$0
+script_path=$(dirname "$0")
 while IFS=$'\t' read -r query reference gene_name || [ -n "$query" ]; do
     query=$(echo "$query" | tr -d '\r')
     reference=$(echo "$reference" | tr -d '\r')
@@ -32,13 +36,13 @@ while IFS=$'\t' read -r query reference gene_name || [ -n "$query" ]; do
     echo "Gene: $gene_name"
 
     # Example command using query and reference
-    ~/scripts/sylvies_scripts/sylvies_devider_pipeline.sh "$INPUT_DIR" "$QUERY_DIR/$query" "$REF_DIR/$reference" "$OUTPUT_DIR/$gene_name" "$MIN_AB" "$gene_name"
+    ${script_path}/sylvies_devider_pipeline.sh "$INPUT_DIR" "$QUERY_DIR/$query" "$REF_DIR/$reference" "$OUTPUT_DIR/$gene_name" "$MIN_AB" "$gene_name"
 done < "$INPUT_TSV"
 
 echo -e "copying alignments into one folder..."
-~/scripts/sylvies_scripts/intermediate/alignment_collector.sh "$OUTPUT_DIR" "$OUTPUT_DIR"/collected_alignments
+${script_path}/intermediate/alignment_collector.sh "$OUTPUT_DIR" "$OUTPUT_DIR"/collected_alignments
 
 
 echo -e "\n****** FINAL SUMMARY ******"
-~/scripts/sylvies_scripts/intermediate/devider_output_summarizer.sh "$OUTPUT_DIR" "$OUTPUT_DIR/haplotype_summary.txt"
+${script_path}/intermediate/devider_output_summarizer.sh "$OUTPUT_DIR" "$OUTPUT_DIR/haplotype_summary.txt"
 echo -e "\nAlignments collected in $OUTPUT_DIR/collected_alignments (where devider ran, alignments are tagged with haplotype 'HP')"
