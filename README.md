@@ -138,4 +138,4 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 │       └── Tc1318_alignment_haplotagged.bam
 ```
 
-##Still to come: batch script
+## Still to come: batch script
