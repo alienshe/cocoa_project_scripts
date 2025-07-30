@@ -67,13 +67,24 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 #### What does it do?
 
 1. Reads are aligned against the reference fasta with minimap2
-
+2. Clair3 identifies variant SNPs and indels using the alignment and the reference sequences. Outputs phased .vcf file.
+3. Haplotyping: (sorting reads into haplotype groups based on variant alleles from .vcf) Done by both devider and whatshap. You can choose which output you want to use. In either case, a tagged .bam file will be output (tag: HP) which indicates which reads belong to which haplotypes.
+   - devider: optimised for nanopore data, doesnt take indels into account, doesnt require you to define ploidy (so can work for mixed samples)
+   - whatshap: less sophisticated, takes indels into account, requires defined ploidy (default: 2).
 
 #### Outputs
+```bash
+.
+├── alignments        #contains reads aligned against reference
+├── clair3_output     #contains .vcf files identifying variant alleles
+├── devider_output    #contains reads sorted into haplotypes 
+├── log.txt
+└── whatshap_output   #contains reads sorted into haplotypes (currently only tagged .bam)
+```
 
 #### Example
 
-##### Input directory structure
+##### Example input directory structure
 ```bash
 ├── inputs
     ├── trimmed_reads
@@ -89,12 +100,12 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
         ├── Tc2391_ref_chr3.fasta
         └── Tc2391_ref_chr3.fasta.fai
 ```
-##### Command
+##### Example command
 ```bash
 ./haplotyping_pipeline.sh home/user/inputs trimmed_reads/trimmed_Tc1318.fastq reference_files/Tc1318_ref_chr8.fasta /home/user/output_dir Tc1318
 ```
 
-##### Output directory structure
+##### Example output directory structure
 ```bash
 ├── output_dir
 │   ├── alignments
