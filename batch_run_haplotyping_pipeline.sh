@@ -36,7 +36,7 @@ while IFS=$'\t' read -r query reference gene_name || [ -n "$query" ]; do
     echo "Gene: $gene_name"
 
     # Example command using query and reference
-    ${script_path}/sylvies_devider_pipeline.sh "$INPUT_DIR" "$QUERY_DIR/$query" "$REF_DIR/$reference" "$OUTPUT_DIR/$gene_name" "$MIN_AB" "$gene_name"
+    ${script_path}/haplotyping_pipeline.sh "$INPUT_DIR" "$QUERY_DIR/$query" "$REF_DIR/$reference" "$OUTPUT_DIR/$gene_name" "$MIN_AB" "$gene_name"
 done < "$INPUT_TSV"
 
 echo -e "copying alignments into one folder..."

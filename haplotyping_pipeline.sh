@@ -96,7 +96,9 @@ ${THREADS}
 #whatshap
 mkdir ${OUTPUT_DIR}/whatshap_output
 ${script_path}/intermediate/whatshap_haplotag_script.sh \
-	${OUTPUT_DIR}/whatshap_output/${GENE_NAME}_alignment_haplotagged.bam \
+	${OUTPUT_DIR}/whatshap_output/ \
+	${GENE_NAME}_alignment_haplotagged.bam \
 	${INPUT_DIR}/${REFERENCE_FASTA} \
 	${OUTPUT_DIR}/clair3_output/phased_merge_output.vcf.gz \
-	${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam
+	${OUTPUT_DIR}/alignments/${GENE_NAME}_alignment_sorted.bam \
+	${GENE_NAME}
