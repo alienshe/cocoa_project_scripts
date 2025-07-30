@@ -52,12 +52,77 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 
 ## haplotyping_pipeline.sh
 
-
 #### Usage
-
+```bash
+./haplotyping_pipeline.sh <home/user/input_dir> <trimmed_reads.fastq> <reference.fasta> </home/user/output_dir> <gene_name>
+```
 #### Inputs
+
+1. Input directory: This directory must contain any other input files (reference fasta +reads). MUST BE NON RELATIVE PATH FROM HOME DIR
+2. Trimmed reads: path relative to input directory. .fastq file containing reads with primers/barcodes already trimmed with something like porechop.
+3. Reference fasta. (note: must indexed and .fai file must be present in the same directory)
+4. Output directory: MUST BE NON RELATIVE PATH FROM HOME DIR
+5. Gene name: This is used to name output files neatly.
 
 #### What does it do?
 
+1. Reads are aligned against the reference fasta with minimap2
+
+
 #### Outputs
 
+#### Example
+
+##### Input directory structure
+```bash
+├── inputs
+    ├── trimmed_reads
+    │   ├── trimmed_Tc1318.fastq
+    │   ├── trimmed_Tc1320.fastq
+    │   ├── trimmed_Tc2391.fastq
+    │   └── trimmed_unclassified.fastq
+    └── reference_files
+        ├── Tc1318_ref_chr8.fasta
+        ├── Tc1318_ref_chr8.fasta.fai
+        ├── Tc1320_ref_chr8.fasta
+        ├── Tc1320_ref_chr8.fasta.fai
+        ├── Tc2391_ref_chr3.fasta
+        └── Tc2391_ref_chr3.fasta.fai
+```
+##### Command
+```bash
+./haplotyping_pipeline.sh home/user/inputs trimmed_reads/trimmed_Tc1318.fastq reference_files/Tc1318_ref_chr8.fasta /home/user/output_dir Tc1318
+```
+
+##### Output directory structure
+```bash
+├── output_dir
+│   ├── alignments
+│   │   ├── Tc1318_alignment.bam
+│   │   ├── Tc1318_alignment.sam
+│   │   ├── Tc1318_alignment_sorted.bam
+│   │   ├── Tc1318_alignment_sorted.bam.bai
+│   │   ├── Tc1318_alignment_sorted.bam.tagged.bam
+│   │   └── Tc1318_alignment_sorted.bam.tagged.bam.bai
+│   ├── clair3_output
+│   │   ├── full_alignment.vcf.gz
+│   │   ├── full_alignment.vcf.gz.tbi
+│   │   ├── log
+│   │   ├── merge_output.vcf.gz
+│   │   ├── merge_output.vcf.gz.tbi
+│   │   ├── phased_merge_output.vcf.gz
+│   │   ├── phased_merge_output.vcf.gz.tbi
+│   │   ├── pileup.vcf.gz
+│   │   ├── pileup.vcf.gz.tbi
+│   │   ├── run_clair3.log
+│   │   └── tmp
+│   ├── devider_output
+│   │   ├── hap_info.txt
+│   │   ├── ids.txt
+│   │   ├── intermediate
+│   │   ├── majority_vote_haplotypes.fasta
+│   │   └── snp_haplotypes.fasta
+│   ├── log.txt
+│   └── whatshap_output
+│       └── Tc1318_alignment_haplotagged.bam
+```
