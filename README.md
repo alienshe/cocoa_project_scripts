@@ -142,4 +142,110 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 │   │   └── Tc1318_haplotype_unassigned_consensus.fasta
 ```
 
-## Still to come: batch script
+## batch_run_haplotyping_pipeline.sh
+
+#### Usage
+```bash
+./batch_run_devider_pipeline.sh <file_list.tsv> <home/user/input_dir> <home/user/output_dir> <query_dir> <reference_dir> <minimum_abundance>
+```
+
+#### Inputs
+1. file list tsv: .tsv file which tells the script the reads and corresponding reference files you want to input.
+         Column 1 should be the name of the .fastq file containing your trimmed reads (in the query directory)
+         Column 2 should be the name of the reference .fasta file (in the reference directory)
+         Column 3 is the name of the sample (used for neatly naming output files)
+   Example:
+```bash
+trimmed_Tc3425.fastq	Tc3425_ref_chr9.fasta	Tc3425
+trimmed_Tc3078.fastq	Tc3078_ref_chr9.fasta	Tc3078
+trimmed_Tc1320.fastq	Tc1320_ref_chr8.fasta	Tc1320
+trimmed_Tc2391.fastq	Tc2391_ref_chr3.fasta	Tc2391
+trimmed_Tc1318.fastq	Tc1318_ref_chr8.fasta	Tc1318
+```
+2. Input directory: This directory must contain any other input files (reference fastas + reads). MUST BE NON RELATIVE PATH FROM HOME DIR
+3. Output directory: MUST BE NON RELATIVE PATH FROM HOME DIR
+4. Query directory: directory containing all of your trimmed .fastq files containing your reads. You should have 1 file per sample (path relative to input directory)
+5. Reference directory: directory containing all reference .fasta files (path relative to input directory)
+6. Minimum abundance: integer from 0-100. passed to devider. Defines the minimum abundance required for each devider haplotype.
+
+##### Example 
+###### Command
+```bash
+~batch_run_haplotyping_pipeline.sh \
+      ~/inputs/reference_files/NLRs.tsv \   #tsv which tell the script what files to process
+      /home/sylvie/inputs \                 #objective path to input directory
+      /home/sylvie/NLR_haplotyping_output \ #objective path to output directory
+      trimmed_reads \                       #directory (relative to input dir) containing .fastq files trimmed with porechop
+      reference_files \                     #directory (relative to input dir) containing reference .fasta files
+      0                                     #minimum abundance for devider haplotypes
+```
+```bash
+└── inputs
+    ├── trimmed_reads
+    │   ├── trimmed_Tc1318.fastq
+    │   ├── trimmed_Tc1320.fastq
+    │   ├── trimmed_Tc2391.fastq
+    │   ├── trimmed_Tc3078.fastq
+    │   ├── trimmed_Tc3425.fastq
+    │   ├── trimmed_Tc3618.fastq
+    └── reference_files
+        ├── NLRs.tsv
+        ├── Tc1318_ref_chr8.fasta
+        ├── Tc1318_ref_chr8.fasta.fai
+        ├── Tc1320_ref_chr8.fasta
+        ├── Tc1320_ref_chr8.fasta.fai
+        ├── Tc2391_ref_chr3.fasta
+        ├── Tc2391_ref_chr3.fasta.fai
+        ├── Tc3078_ref_chr9.fasta
+        ├── Tc3078_ref_chr9.fasta.fai
+        ├── Tc3425_ref_chr9.fasta
+        ├── Tc3425_ref_chr9.fasta.fai
+        ├── Tc3618_ref_chr9.fasta
+        ├── Tc3618_ref_chr9.fasta.fai
+
+```
+
+
+#### What does it do?
+
+1. Iterates through file list tsv and runs the haplotyping_pipeline.sh script on the files from each row.
+2. Summarises devider output, telling you how many haplotypes were found etc.
+3. Collects devider haplotagged alignments from all samples into one directory
+   
+#### Outputs
+
+```bash
+.
+├── collected_alignments
+├── haplotype_summary.txt
+├── Tc1318
+│   ├── clair3_output
+│   ├── devider_output
+│   ├── log.txt
+│   └── whatshap_output
+├── Tc1320
+│   ├── alignments
+│   ├── clair3_output
+│   ├── devider_output
+│   ├── log.txt
+│   └── whatshap_output
+├── Tc2391
+│   ├── alignments
+│   ├── clair3_output
+│   ├── devider_output
+│   ├── log.txt
+│   └── whatshap_output
+├── Tc3078
+│   ├── alignments
+│   ├── clair3_output
+│   ├── devider_output
+│   ├── log.txt
+│   └── whatshap_output
+└── Tc3425
+    ├── alignments
+    ├── clair3_output
+    ├── devider_output
+    ├── log.txt
+    └── whatshap_output
+
+```
