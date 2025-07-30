@@ -29,3 +29,14 @@ samtools split \
 	-f "${OUTPUT_DIRECTORY}/split_alignments/${GENE_NAME}_haplotype_%#_alignment.%." \
 	"$OUTPUT_DIRECTORY"/"$OUTPUT_ALIGNMENT"
 
+
+echo ""
+echo ""
+echo ""
+echo "creating consensus sequence for each haplotype"
+for alignment in ${OUTPUT_DIRECTORY}/split_alignments/*; do
+    
+	base_name=$(basename "$alignment")
+	stem=$(grep -Po '.*_haplotype_.*_' <<< "$base_name")
+	samtools consensus -o "${OUTPUT_DIRECTORY}/${stem}consensus.fasta" $alignment 
+done
