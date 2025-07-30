@@ -68,7 +68,7 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 
 1. Reads are aligned against the reference fasta with minimap2
 2. Clair3 identifies variant SNPs and indels using the alignment and the reference sequences. Outputs phased .vcf file.
-3. Haplotyping: (sorting reads into haplotype groups based on variant alleles from .vcf) Done by both devider and whatshap. You can choose which output you want to use. In either case, a tagged .bam file will be output (tag: HP) which indicates which reads belong to which haplotypes.
+3. Haplotyping: (sorting reads into haplotype groups based on variant alleles from .vcf) Done by both devider and whatshap. You can choose which output you want to use. In either case, a tagged .bam file will be output (tag: HP) which indicates which reads belong to which haplotypes. There will also be consensus sequences output for each haplotype.
    - devider: optimised for nanopore data, doesnt take indels into account, doesnt require you to define ploidy (so can work for mixed samples)
    - whatshap: less sophisticated, takes indels into account, requires defined ploidy (default: 2).
 
@@ -77,9 +77,9 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 .
 ├── alignments        #contains reads aligned against reference
 ├── clair3_output     #contains .vcf files identifying variant alleles
-├── devider_output    #contains reads sorted into haplotypes 
+├── devider_output    #contains reads sorted into haplotypes and consensus sequences for each haplotype
 ├── log.txt
-└── whatshap_output   #contains reads sorted into haplotypes (currently only tagged .bam)
+└── whatshap_output   #contains reads sorted into haplotypes and consensus sequences for each haplotype
 ```
 
 #### Example
@@ -135,7 +135,11 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 │   │   └── snp_haplotypes.fasta
 │   ├── log.txt
 │   └── whatshap_output
-│       └── Tc1318_alignment_haplotagged.bam
+│   │   ├── split_alignments
+│   │   ├── Tc1318_alignment_haplotagged.bam
+│   │   ├── Tc1318_haplotype_0_consensus.fasta
+│   │   ├── Tc1318_haplotype_1_consensus.fasta
+│   │   └── Tc1318_haplotype_unassigned_consensus.fasta
 ```
 
 ## Still to come: batch script
