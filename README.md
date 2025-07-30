@@ -50,5 +50,14 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 ```
 
 
-## Coming Soon: Info on haplotyping pipeline
+## haplotyping_pipeline.sh
+
+
+#### Usage
+
+#### Inputs
+
+#### What does it do?
+
+#### Outputs
 
