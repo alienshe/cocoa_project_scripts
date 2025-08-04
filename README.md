@@ -4,11 +4,11 @@ This is a collection of scripts which are used to analyse nanopore amplicon sequ
 
 ## Summary of scripts
 
-[**demultiplex_nested_barcodes.sh**](#demultiplex_nested_barcodes.sh) - Demultiplexes reads that were multiplexed using "nested" barcodes. This means that an inner barcode was applied to the reads using tagged PCR primers, and then a second outer barcode was applied using the ONT Native barcoding kit.
+**demultiplex_nested_barcodes.sh**- Demultiplexes reads that were multiplexed using "nested" barcodes. This means that an inner barcode was applied to the reads using tagged PCR primers, and then a second outer barcode was applied using the ONT Native barcoding kit.
 
-[**haplotyping_pipeline.sh**](#haplotyping_pipeline.sh) - Takes reads and sorts them into haplotypes based on variant SNPs and indels (depending on which output you choose)
+**haplotyping_pipeline.sh** - Takes reads and sorts them into haplotypes based on variant SNPs and indels (depending on which output you choose)
 
-[**batch_run_haplotyping_pipeline.sh**](#batch_run_haplotyping_pipeline.sh) - Uses an input .tsv file to run the haplotyping pipeline script over a large number of samples, also summarises the outputs.
+**batch_run_haplotyping_pipeline.sh** - Uses an input .tsv file to run the haplotyping pipeline script over a large number of samples, also summarises the outputs.
 
 
 ## demultiplex_nested_barcodes.sh
