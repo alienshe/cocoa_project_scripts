@@ -23,7 +23,7 @@ This is a collection of scripts which are used to analyse nanopore amplicon sequ
 - .fasta file containing FULL COMBINED BARCODE sequences. Works best if full sequence is >40bp. Should contain the ONT barcode, adapter, and inner barcode (i also like to include the primer)
 
 eg:
-```bash
+```
       >Tc1318
       CCAAACCCAACAACCTAGATAGGCCAGCACCTTAGGCGAAAAGAGATTGCCGGTCGTTGT
       >Tc1320
@@ -40,7 +40,7 @@ eg:
 
 #### Outputs
 A .fastq file is output for each barcode found in the reads. The reads trimmed with porechop can be found in the sorted_trimmed_fastq_files folder. The untrimmed reads are in the intermediate_files fodler.
-```bash
+```
 ├── intermediate_files
 ├── run.log
 └── sorted_trimmed_fastq_files
@@ -73,7 +73,7 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
    - whatshap: less sophisticated, takes indels into account, requires defined ploidy (default: 2).
 
 #### Outputs
-```bash
+```
 .
 ├── alignments        #contains reads aligned against reference
 ├── clair3_output     #contains .vcf files identifying variant alleles
@@ -85,7 +85,7 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 #### Example
 
 ##### Example input directory structure
-```bash
+```
 ├── inputs
     ├── trimmed_reads
     │   ├── trimmed_Tc1318.fastq
@@ -106,7 +106,7 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
 ```
 
 ##### Example output directory structure
-```bash
+```
 ├── output_dir
 │   ├── alignments
 │   │   ├── Tc1318_alignment.bam
@@ -155,7 +155,7 @@ A .fastq file is output for each barcode found in the reads. The reads trimmed w
          Column 2 should be the name of the reference .fasta file (in the reference directory)
          Column 3 is the name of the sample (used for neatly naming output files)
    Example:
-```bash
+```
 trimmed_Tc3425.fastq	Tc3425_ref_chr9.fasta	Tc3425
 trimmed_Tc3078.fastq	Tc3078_ref_chr9.fasta	Tc3078
 trimmed_Tc1320.fastq	Tc1320_ref_chr8.fasta	Tc1320
@@ -179,7 +179,7 @@ trimmed_Tc1318.fastq	Tc1318_ref_chr8.fasta	Tc1318
       reference_files \                     #directory (relative to input dir) containing reference .fasta files
       0                                     #minimum abundance for devider haplotypes
 ```
-```bash
+```
 └── inputs
     ├── trimmed_reads
     │   ├── trimmed_Tc1318.fastq
@@ -214,7 +214,7 @@ trimmed_Tc1318.fastq	Tc1318_ref_chr8.fasta	Tc1318
    
 #### Outputs
 
-```bash
+```
 .
 ├── collected_alignments
 ├── haplotype_summary.txt
