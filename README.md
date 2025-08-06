@@ -1,239 +1,251 @@
-# Cocoa Project Genomics Pipeline
+This is a collection of scripts which are used to analyse nanopore amplicon sequence data. 
 
 
-## Overview
 
-The Cocoa Project Genomics Pipeline provides a complete workflow for:
+## Summary of scripts
 
-1. **Demultiplexing**: Separating pooled nanopore sequencing reads based on barcodes
-2. **Quality Control**: Adapter trimming and read filtering
-3. **Alignment**: Mapping reads to reference sequences using minimap2
-4. **Variant Calling**: Identifying genetic variants using Clair3
-5. **Haplotype Reconstruction**: Reconstructing haplotypes using devider
-6. **Batch Processing**: Analyzing multiple samples simultaneously
+**demultiplex_nested_barcodes.sh**- Demultiplexes reads that were multiplexed using "nested" barcodes. This means that an inner barcode was applied to the reads using tagged PCR primers, and then a second outer barcode was applied using the ONT Native barcoding kit.
 
-## Key Features
+**haplotyping_pipeline.sh** - Takes reads and sorts them into haplotypes based on variant SNPs and indels (depending on which output you choose)
 
-- **Containerized**: Complete pipeline packaged in Docker for reproducibility
-- **Real Demo Data**: Includes actual pangkep study data for testing and learning
-- **Multi-platform**: Supports both AMD64 and ARM64 architectures (with platform flag for ARM64)
-- **Self-contained**: All tools and models included in the container
-- **Interactive Menu**: User-friendly command interface with built-in help
-- **Comprehensive Output**: Detailed logs, alignments, variants, and haplotypes
-- **Batch Processing**: Efficient analysis of multiple samples
-
-## Scientific Background
-
-This pipeline was designed for studying NLR genes, which are important components of plant immune systems. The workflow processes long-read nanopore sequencing data to:
-
-- Identify genetic variants in NLR genes
-- Reconstruct haplotypes to understand allelic diversity
-- Analyze structural variations that may affect disease resistance
-- Support breeding programs and evolutionary studies
-
-## Installation
-
-### Prerequisites
-
-- Docker installed on your system
-- Sufficient disk space (recommend 50GB+ for full analysis)
-- Internet connection for downloading the Docker image
-
-### Pull the Docker Image
-
-```bash  
-# Pull the latest stable version  
-docker pull ghcr.io/alienshe/cocoa_project_scripts:stable  
-
-# Or pull a specific version  
-docker pull ghcr.io/alienshe/cocoa_project_scripts:v1.0.0
-```
+**batch_run_haplotyping_pipeline.sh** - Uses an input .tsv file to run the haplotyping pipeline script over a large number of samples, also summarises the outputs.
 
 
-### Or clone the repository and build the Docker image
+## demultiplex_nested_barcodes.sh
 
+#### Usage
 ```bash
-git clone https://github.com/alienshe/cocoa_project_scripts.git
-cd cocoa_project_scripts
-
-# For x86_64 systems (Linux/Intel Mac):
-docker build -t cocoa-pipeline .
-
-# For ARM64 systems (Apple Silicon Mac):
-docker build --platform=linux/amd64 -t cocoa-pipeline .
+./demultiplex_nested_barcodes.sh <barcodes.fa> <reads.fastq.gz> <output_directory>
 ```
 
-## Quick Start
+#### Inputs
+- a single .fastq.gz file containing the raw reads
+- .fasta file containing FULL COMBINED BARCODE sequences. Works best if full sequence is >40bp. Should contain the ONT barcode, adapter, and inner barcode (i also like to include the primer)
 
-### Interactive Menu
+eg:
+```
+      >Tc1318
+      CCAAACCCAACAACCTAGATAGGCCAGCACCTTAGGCGAAAAGAGATTGCCGGTCGTTGT
+      >Tc1320
+      CCAAACCCAACAACCTAGATAGGCCAGCACCTGCGAGAATTGACAAGTTGGCCAGTCGTT
+```
+#### What does it do?
+1. Reads are aligned to barcodes.fa file with minimap2
+2. Hits from minimap2 output that are from reads that are not between 3 and 9 kb, and hits that have barcodes in the middle, are removed.
+3. The best hit for each read is kept
+4. Based on this, reads are sorted into separate files, one for each barcode.
+5. Porechop is used to trim barcodes/adapters/primers from the reads
 
+     NOTE: for this step to work, any custom barcodes/primers must be added to porechop's adapters.py file
+
+#### Outputs
+A .fastq file is output for each barcode found in the reads. The reads trimmed with porechop can be found in the sorted_trimmed_fastq_files folder. The untrimmed reads are in the intermediate_files fodler.
+```
+├── intermediate_files
+├── run.log
+└── sorted_trimmed_fastq_files
+    ├── trimmed_Tc1318.fastq
+    ├── trimmed_Tc1320.fastq
+    └── trimmed_unclassified.fastq
+```
+
+
+## haplotyping_pipeline.sh
+
+#### Usage
 ```bash
-# Run the container to see the interactive menu
-docker run -it cocoa-pipeline
+./haplotyping_pipeline.sh <home/user/input_dir> <trimmed_reads.fastq> <reference.fasta> </home/user/output_dir> <gene_name>
+```
+#### Inputs
 
-# Or with volume mounting for persistent data
-docker run -it -v $(pwd)/data:/app/data cocoa-pipeline
+1. Input directory: This directory must contain any other input files (reference fasta +reads). MUST BE NON RELATIVE PATH FROM HOME DIR
+2. Trimmed reads: path relative to input directory. .fastq file containing reads with primers/barcodes already trimmed with something like porechop.
+3. Reference fasta. (note: must indexed and .fai file must be present in the same directory)
+4. Output directory: MUST BE NON RELATIVE PATH FROM HOME DIR
+5. Gene name: This is used to name output files neatly.
+
+#### What does it do?
+
+1. Reads are aligned against the reference fasta with minimap2
+2. Clair3 identifies variant SNPs and indels using the alignment and the reference sequences. Outputs phased .vcf file.
+3. Haplotyping: (sorting reads into haplotype groups based on variant alleles from .vcf) Done by both devider and whatshap. You can choose which output you want to use. In either case, a tagged .bam file will be output (tag: HP) which indicates which reads belong to which haplotypes. There will also be consensus sequences output for each haplotype.
+   - devider: optimised for nanopore data, doesnt take indels into account, doesnt require you to define ploidy (so can work for mixed samples)
+   - whatshap: less sophisticated, takes indels into account, requires defined ploidy (default: 2).
+
+#### Outputs
+```
+.
+├── alignments        #contains reads aligned against reference
+├── clair3_output     #contains .vcf files identifying variant alleles
+├── devider_output    #contains reads sorted into haplotypes and consensus sequences for each haplotype
+├── log.txt
+└── whatshap_output   #contains reads sorted into haplotypes and consensus sequences for each haplotype
 ```
 
-The interactive menu provides:
+#### Example
 
-Demo commands: Try the pipeline with included test data
-- Production commands: Run on your own data
-- Tool access: Direct access to all bioinformatics tools
-- Status checks: Verify all tools and models are properly installed
-
-### Demo Analysis
-
+##### Example input directory structure
+```
+├── inputs
+    ├── trimmed_reads
+    │   ├── trimmed_Tc1318.fastq
+    │   ├── trimmed_Tc1320.fastq
+    │   ├── trimmed_Tc2391.fastq
+    │   └── trimmed_unclassified.fastq
+    └── reference_files
+        ├── Tc1318_ref_chr8.fasta
+        ├── Tc1318_ref_chr8.fasta.fai
+        ├── Tc1320_ref_chr8.fasta
+        ├── Tc1320_ref_chr8.fasta.fai
+        ├── Tc2391_ref_chr3.fasta
+        └── Tc2391_ref_chr3.fasta.fai
+```
+##### Example command
 ```bash
-# List available demo files
-docker run -it cocoa-pipeline list_demo_files
-
-# Run demultiplexing demo
-docker run -it -v $(pwd)/output:/app/output cocoa-pipeline \
-    demo_demultiplex /app/output/demux_demo
-
-# Run single gene analysis demo
-docker run -it -v $(pwd)/output:/app/output cocoa-pipeline \
-    demo_devider Tc1318 /app/output/gene_demo
-
-# Run batch processing demo
-docker run -it -v $(pwd)/output:/app/output cocoa-pipeline \
-    demo_batch_devider /app/output/batch_demo
+./haplotyping_pipeline.sh home/user/inputs trimmed_reads/trimmed_Tc1318.fastq reference_files/Tc1318_ref_chr8.fasta /home/user/output_dir Tc1318
 ```
 
-## Usage
+##### Example output directory structure
+```
+├── output_dir
+│   ├── alignments
+│   │   ├── Tc1318_alignment.bam
+│   │   ├── Tc1318_alignment.sam
+│   │   ├── Tc1318_alignment_sorted.bam
+│   │   ├── Tc1318_alignment_sorted.bam.bai
+│   │   ├── Tc1318_alignment_sorted.bam.tagged.bam
+│   │   └── Tc1318_alignment_sorted.bam.tagged.bam.bai
+│   ├── clair3_output
+│   │   ├── full_alignment.vcf.gz
+│   │   ├── full_alignment.vcf.gz.tbi
+│   │   ├── log
+│   │   ├── merge_output.vcf.gz
+│   │   ├── merge_output.vcf.gz.tbi
+│   │   ├── phased_merge_output.vcf.gz
+│   │   ├── phased_merge_output.vcf.gz.tbi
+│   │   ├── pileup.vcf.gz
+│   │   ├── pileup.vcf.gz.tbi
+│   │   ├── run_clair3.log
+│   │   └── tmp
+│   ├── devider_output
+│   │   ├── hap_info.txt
+│   │   ├── ids.txt
+│   │   ├── intermediate
+│   │   ├── majority_vote_haplotypes.fasta
+│   │   └── snp_haplotypes.fasta
+│   ├── log.txt
+│   └── whatshap_output
+│   │   ├── split_alignments
+│   │   ├── Tc1318_alignment_haplotagged.bam
+│   │   ├── Tc1318_haplotype_0_consensus.fasta
+│   │   ├── Tc1318_haplotype_1_consensus.fasta
+│   │   └── Tc1318_haplotype_unassigned_consensus.fasta
+```
 
-### Demultiplexing
+## batch_run_haplotyping_pipeline.sh
 
+#### Usage
 ```bash
-
-docker run -it \
-    -v /path/to/your/data:/app/data \
-    -v /path/to/output:/app/output \
-    cocoa-pipeline \
-    demultiplex \
-    /app/data/barcodes.fa \
-    /app/data/raw_reads.fastq.gz \
-    /app/output/demultiplexed
+./batch_run_devider_pipeline.sh <file_list.tsv> <home/user/input_dir> <home/user/output_dir> <query_dir> <reference_dir> <minimum_abundance>
 ```
 
-### Single Gene Analysis
+#### Inputs
+1. file list tsv: .tsv file which tells the script the reads and corresponding reference files you want to input.
+         Column 1 should be the name of the .fastq file containing your trimmed reads (in the query directory)
+         Column 2 should be the name of the reference .fasta file (in the reference directory)
+         Column 3 is the name of the sample (used for neatly naming output files)
+   Example:
+```
+trimmed_Tc3425.fastq	Tc3425_ref_chr9.fasta	Tc3425
+trimmed_Tc3078.fastq	Tc3078_ref_chr9.fasta	Tc3078
+trimmed_Tc1320.fastq	Tc1320_ref_chr8.fasta	Tc1320
+trimmed_Tc2391.fastq	Tc2391_ref_chr3.fasta	Tc2391
+trimmed_Tc1318.fastq	Tc1318_ref_chr8.fasta	Tc1318
+```
+2. Input directory: This directory must contain any other input files (reference fastas + reads). MUST BE NON RELATIVE PATH FROM HOME DIR
+3. Output directory: MUST BE NON RELATIVE PATH FROM HOME DIR
+4. Query directory: directory containing all of your trimmed .fastq files containing your reads. You should have 1 file per sample (path relative to input directory)
+5. Reference directory: directory containing all reference .fasta files (path relative to input directory)
+6. Minimum abundance: integer from 0-100. passed to devider. Defines the minimum abundance required for each devider haplotype.
 
+##### Example 
+###### Command
 ```bash
-docker run -it \
-    -v /path/to/your/data:/app/data \
-    -v /path/to/output:/app/output \
-    cocoa-pipeline \
-    devider \
-    /app/data \
-    /app/data/trimmed_gene.fastq \
-    /app/data/gene_reference.fasta \
-    /app/output/gene_analysis \
-    8 \
-    gene_name
+~batch_run_haplotyping_pipeline.sh \
+      ~/inputs/reference_files/NLRs.tsv \   #tsv which tell the script what files to process
+      /home/sylvie/inputs \                 #objective path to input directory
+      /home/sylvie/NLR_haplotyping_output \ #objective path to output directory
+      trimmed_reads \                       #directory (relative to input dir) containing .fastq files trimmed with porechop
+      reference_files \                     #directory (relative to input dir) containing reference .fasta files
+      0                                     #minimum abundance for devider haplotypes
+```
+```
+└── inputs
+    ├── trimmed_reads
+    │   ├── trimmed_Tc1318.fastq
+    │   ├── trimmed_Tc1320.fastq
+    │   ├── trimmed_Tc2391.fastq
+    │   ├── trimmed_Tc3078.fastq
+    │   ├── trimmed_Tc3425.fastq
+    │   ├── trimmed_Tc3618.fastq
+    └── reference_files
+        ├── NLRs.tsv
+        ├── Tc1318_ref_chr8.fasta
+        ├── Tc1318_ref_chr8.fasta.fai
+        ├── Tc1320_ref_chr8.fasta
+        ├── Tc1320_ref_chr8.fasta.fai
+        ├── Tc2391_ref_chr3.fasta
+        ├── Tc2391_ref_chr3.fasta.fai
+        ├── Tc3078_ref_chr9.fasta
+        ├── Tc3078_ref_chr9.fasta.fai
+        ├── Tc3425_ref_chr9.fasta
+        ├── Tc3425_ref_chr9.fasta.fai
+        ├── Tc3618_ref_chr9.fasta
+        ├── Tc3618_ref_chr9.fasta.fai
+
 ```
 
-### Batch Processing
 
-```bash
-docker run -it \
-    -v /path/to/your/data:/app/data \
-    -v /path/to/output:/app/output \
-    cocoa-pipeline \
-    batch_devider \
-    /app/data/gene_list.tsv \
-    /app/data \
-    /app/output/batch_results \
-    /app/data/demultiplexed_reads \
-    /app/data/reference_files \
-    8
+#### What does it do?
+
+1. Iterates through file list tsv and runs the haplotyping_pipeline.sh script on the files from each row.
+2. Summarises devider output, telling you how many haplotypes were found etc.
+3. Collects devider haplotagged alignments from all samples into one directory
+   
+#### Outputs
+
 ```
+.
+├── collected_alignments
+├── haplotype_summary.txt
+├── Tc1318
+│   ├── clair3_output
+│   ├── devider_output
+│   ├── log.txt
+│   └── whatshap_output
+├── Tc1320
+│   ├── alignments
+│   ├── clair3_output
+│   ├── devider_output
+│   ├── log.txt
+│   └── whatshap_output
+├── Tc2391
+│   ├── alignments
+│   ├── clair3_output
+│   ├── devider_output
+│   ├── log.txt
+│   └── whatshap_output
+├── Tc3078
+│   ├── alignments
+│   ├── clair3_output
+│   ├── devider_output
+│   ├── log.txt
+│   └── whatshap_output
+└── Tc3425
+    ├── alignments
+    ├── clair3_output
+    ├── devider_output
+    ├── log.txt
+    └── whatshap_output
 
-### Interactive Shell
-
-```bash
-# Access the container for custom analysis
-docker run -it -v $(pwd)/data:/app/data cocoa-pipeline bash
-
-# Inside the container, all tools are available:
-# porechop, minimap2, samtools, devider, clair3
 ```
-
-## Tools Included
-
-The pipeline includes all necessary bioinformatics tools:
-
-porechop: Adapter trimming for nanopore reads
-minimap2: Fast alignment of long reads
-samtools: SAM/BAM file manipulation
-tabix: Indexing for genomic data
-lofreq: Variant calling
-devider: Haplotype reconstruction
-clair3: Deep learning-based variant calling (with r1041_e82_400bps_hac_v500 model)
-
-## Architecture
-
-The pipeline is built on:
-
-Base: Ubuntu Linux via micromamba container
-Package Manager: Micromamba for fast, reliable package management
-Sources: Bioconda and conda-forge for bioinformatics tools
-Models: Pre-installed Clair3 model for nanopore variant calling
-
-## File Structure
-
-```bash
-cocoa_project_scripts/
-├── demo_files/                    # Test data and examples
-│   ├── inputs/
-│   │   ├── pangkep_raw_reads/
-│   │   ├── pangkep_run_bc01_demultiplexed/
-│   │   └── reference_files/
-│   └── outputs/
-├── scripts/
-│   ├── full_demultiplex_inc_minimap.sh
-│   ├── sylvies_devider_pipeline.sh
-│   └── batch_run_devider_pipeline.sh
-├── Dockerfile
-└── README.md
-```
-
-### Platform Support
-
-```bash
-Linux (x86_64): Native support
-macOS (Intel): Native support
-macOS (Apple Silicon): Use --platform=linux/amd64 flag
-Windows: Via Docker Desktop
-```
-
-### Performance Notes
-
-```bash
-Memory: Minimum 8GB RAM recommended, 16GB+ for large datasets
-CPU: Multi-threading supported (adjust thread count in commands)
-Storage: SSD recommended for faster I/O operations
-Network: Initial download ~2-3GB for container image
-```
-
-### Troubleshooting
-
-Common Issues
-Permission errors: Ensure Docker has access to mounted directories
-Memory issues: Increase Docker memory limits for large datasets
-Platform issues: Use --platform=linux/amd64 on Apple Silicon
-Tool not found: Check tool availability with the interactive menu
-
-### Getting Help
-
-```bash
-# Check tool status
-docker run -it cocoa-pipeline
-
-# Access interactive shell for debugging
-docker run -it cocoa-pipeline bash
-
-# Check individual tool help
-docker run -it cocoa-pipeline bash -c "devider --help"
-```
-
