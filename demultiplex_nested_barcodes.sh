@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-if [ "$#" -ne 3 ]; then
-    echo "Usage: $0 <barcodes.fa> <reads.fastq.gz> <output_directory>"
+if [ "$#" -lt 3 ]; then
+    echo "Usage: $0 <barcodes.fa> <reads.fastq.gz> <output_directory> optional: <min_length> <max_length>"
     echo -e "\n<barcodes.fa> should contain the full dual barcodes with the names of the barcodes as the headers"
     echo "should be the ONT barcode + adapter + inner barcode + primer"
+    echo "min and max length are optional arguments, and are used to filter reads out (including chimeras). default values are 3000 and 9000 respectively"
     echo -e "\nthis script assumes the length of the full dual barcode is ~50 bp, if the length is very different you may want to adjust the minimap2 arguments in the script \(particularly the -m argument is set to the length of the barcode minus 10\)"
     echo -e "IMPORTANT: for the porechop portion of this pipeline to work, the custom inner barcodes and primers must be added as adapters in porechop's adapters.py file"
     exit 1
@@ -11,7 +12,8 @@ fi
 BARCODES_FA="$1"
 READS_FASTQ="$2"
 OUTPUT_DIR="$3"
-
+MIN_LENGTH=${4:-3000}
+MAX_LENGTH=${5:-9000}
 
 OUTPUT_FILE="barcode_assignments.paf"
 
@@ -37,10 +39,10 @@ TOTAL_ROWS=$(wc -l < "$INPUT_FILE")
 
 # Filter and sort:
 # keep reads with barcodes at the first or last 10% of the read
-# keep only reads between 3 and 9 kb
+# keep only reads between MIN_LENGTH and MAX_LENGTH
 # sort by number of bases matching reference barcode, descending
-echo -e "\nremoving hits from minimap2 output that are from reads that are not between 3 and 9 kb, and removing hits that have barcodes in the middle"
-FILTERED=$(awk -F'\t' '$2 >= 3000 && $2 <= 9000 && (($3 / $2) < 0.1 || ($3 / $2) > 0.9)' "$INPUT_FILE" | sort -k10,10nr)
+echo -e "\nremoving hits from minimap2 output that are from reads that are not between $MIN_LENGTH and $MAX_LENGTH base pairs, and removing hits that have barcodes in the middle"
+FILTERED=$(awk -F'\t' -v minlen="$MIN_LENGTH" -v maxlen="$MAX_LENGTH" '$2 >= minlen && $2 <= maxlen && (($3 / $2) < 0.1 || ($3 / $2) > 0.9)' "$INPUT_FILE" | sort -k10,10nr)
 
 # keep only the first appearance of each read ID (col 1). at this point they are sorted by number of bases matched to the barcode so this should keep the best match for each read if there are duplicates
 DEDUPED=$(echo "$FILTERED" | awk -F'\t' '!seen[$1]++')
