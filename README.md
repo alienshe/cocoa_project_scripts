@@ -15,12 +15,13 @@ This is a collection of scripts which are used to analyse nanopore amplicon sequ
 
 #### Usage
 ```bash
-./demultiplex_nested_barcodes.sh <barcodes.fa> <reads.fastq.gz> <output_directory>
+./demultiplex_nested_barcodes.sh <barcodes.fa> <reads.fastq.gz> <output_directory> optional: <min_read_length> <max_read_length>
 ```
 
 #### Inputs
 - a single .fastq.gz file containing the raw reads
 - .fasta file containing FULL COMBINED BARCODE sequences. Works best if full sequence is >40bp. Should contain the ONT barcode, adapter, and inner barcode (i also like to include the primer)
+- Minimum and maximum read lengths. Any reads outside of this range will be filtered out. Defaults are 3000 and 9000 bp.
 
 eg:
 ```
